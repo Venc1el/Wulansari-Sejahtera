@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\http\Controllers\DashboardController;
 use App\http\Controllers\OrderController;
 use App\http\Controllers\ItemController;
+use App\http\Controllers\CartController;
 use Illuminate\Support\Facades\Gate;
 
 /*
@@ -32,7 +33,12 @@ Route::middleware('auth', 'can:access-dashboard')->group(function () {
 });
 
 Route::middleware('auth')->group(function(){
+    Route::post('/cart/add/{itemId}', [CartController::class, 'addItem'])->name('cart.add');
+    Route::post('/cart/update/{itemId}', [CartController::class, 'updateQuantity'])->name('cart.update');
+    Route::post('/cart/remove/{itemId}', [CartController::class, 'removeItem'])->name('cart.remove');
+    Route::get('/cart/subtotal', [CartController::class, 'subtotal']);
     Route::post('place-order', [OrderController::class, 'placeOrder'])->name('place.order');
+    Route::get('/cart/empty', [CartController::class, 'emptyCart'])->name('cart.empty');
 });
 
 

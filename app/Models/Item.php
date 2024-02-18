@@ -14,6 +14,7 @@ class Item extends Model
         'weight',
         'price',
         'stock_quantity',
-        'image'
+        'image',
+        'description'
     ];
 }

@@ -17,49 +17,61 @@ class OrderController extends Controller
     public function placeOrder(Request $request)
     {
         $user = Auth::user();
-        $itemId = $request->input('item_id');
+        $cartItems = session()->get('cart', []);
 
         $order = new Order([
             'user_id' => $user->id,
             'customer_name' => $user->name,
             'order_date' => now(),
             'total_amount' => 0,
-            'shipping_address' => 'Jl.Indramayu Selatan no 12',
+            'shipping_address' => $user->address,
+
         ]);
 
         $order->save();
 
-        $orderItem = new OrderItem([
-            'order_id' => $order->id,
-            'item_id' => $itemId,
-            'quantity' => rand(1, 5),
-        ]);
+        $totalAmount = 0;
+        $totalPriceItems = 0;
+        foreach ($cartItems as $cartItem) {
+            $orderItem = new OrderItem([
+                'order_id' => $order->id,
+                'item_id' => $cartItem['id'],
+                'quantity' => $cartItem['quantity'],
+            ]);
 
-        $orderItem->save();
+            $orderItem->save();
 
-        $order->total_amount = $order->orderItems->sum(function ($orderItem) {
-            return $orderItem->quantity * $orderItem->item->price;
-        });
+            $totalPriceForItem = $cartItem['quantity'] * $cartItem['price'];
+            $totalAmount += $totalPriceForItem;
 
+            $totalPriceItems += $totalPriceForItem;
+        }
+
+        $order->total_amount = $totalAmount;
         $order->save();
 
         $mailData = [
-            'title' => "Halo Wulansari Sejahtera ",
+            'title' => "Halo Wulansari Sejahtera",
             'body'  => "Kami ingin memberi tahu bahwa ada pesanan baru yang masuk ke toko Anda. Berikut adalah detail pesanannya:",
             'order_id' => $order->id,
             'customer_name' => $user->name,
             'customer_email' => $user->email,
-            'orderItems' => $order->orderItems->map(function ($orderItem) {
+            'customer_phone' => $user->phone,
+            'customer_address' => $user->address,
+            'orderItems' => array_map(function ($cartItem) {
                 return [
-                    'item_name' => $orderItem->item->item_name,
-                    'quantity' => $orderItem->quantity,
-                    'price' => $orderItem->item->price,
+                    'item_name' => $cartItem['item_name'],
+                    'quantity' => $cartItem['quantity'],
+                    'price' => $cartItem['price'],
+                    'total_price' => $cartItem['price'] * $cartItem['quantity'],
                 ];
-            })->toArray(),
-            'total_amount' => $order->total_amount,
+            }, $cartItems),
+            'total_amount' => $totalAmount,
         ];
 
-        Mail::to('wulansarisejahtera613@gmail.com')->send(new UserDataMail($mailData));
+        Mail::to('sales@wulansarisejahtera.com')->send(new UserDataMail($mailData));
+
+        session()->forget('cart');
 
         return redirect('/')->with('success', 'Order placed successfully and email sent!');
     }

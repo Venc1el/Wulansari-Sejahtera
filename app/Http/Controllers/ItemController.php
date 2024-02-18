@@ -10,6 +10,7 @@ class ItemController extends Controller
 {
     public function index(){
         $items = Item::all();
-        return view('welcome', compact('items'));
+        $cartItems = session()->get('cart', []);
+        return view('welcome', compact('cartItems','items'));
     }
 }
