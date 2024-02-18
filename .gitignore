@@ -1,3 +1,4 @@
+# Laravel specific
 /.phpunit.cache
 /node_modules
 /public/build
@@ -9,13 +10,24 @@
 .env.backup
 .env.production
 .phpunit.result.cache
+
+# Homestead
 Homestead.json
 Homestead.yaml
+
+# Composer
 auth.json
+
+# NPM / Yarn
 npm-debug.log
 yarn-error.log
+
+# Fleet
 /.fleet
+
+# IDE specific
 /.idea
 /.vscode
 
+# Vercel
 .vercel
